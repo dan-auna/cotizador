@@ -93,7 +93,7 @@
                     <div class="mx-8 mt-8 p-6 bg-slate-900 rounded-3xl text-white relative overflow-hidden shadow-xl">
                         <div class="relative z-10">
                             <p class="text-xs opacity-70 mb-1">Inversión mensual total</p>
-                            <div class="flex items-baseline gap-2 no-wrap">
+                            <div class="flex items-baseline gap-6 no-wrap">
                                 <span class="text-3xl font-bold text-auna-cyan no-wrap" id="total-promo">S/ 0.00</span>
                                 <span class="text-sm line-through opacity-40 no-wrap" id="total-reg">S/ 0.00</span>
                             </div>
@@ -105,11 +105,12 @@
                     <div class="text-center py-3">
                         <p class="text-[12px] font-bold text-red-500 uppercase tracking-wide" id="texto-vence">Vence el --</p>
                     </div>
-                    <div id="area-beneficio" class="mx-12 mb-6 p-3 bg-amber-50 border border-dashed border-amber-300 rounded-xl flex items-center gap-3 hidden">
+                    
+                    <div id="area-beneficio" class="mx-12 mb-6 p-3 bg-amber-50 border border-dashed border-amber-300 rounded-xl flex items-start gap-3 hidden">
                         <span class="text-2xl">🎁</span>
                         <div class="leading-tight">
-                            <p class="text-[10px] text-amber-900 font-bold uppercase">Beneficio Exclusivo:</p>
-                            <p id="prev-beneficio" class="text-[12px] text-amber-950 font-medium"></p>
+                            <p class="text-[10px] text-amber-900 font-bold uppercase whitespace-nowrap">Beneficio Exclusivo:</p>
+                            <p id="prev-beneficio" class="text-[12px] text-amber-950 font-medium mt-0.5"></p>
                         </div>
                     </div>
                 </div>
@@ -127,6 +128,7 @@
     </div>
 
     <script>
+        // ... (El resto del script permanece igual que tu versión anterior)
         const tarifario = [
             { plan: "Plan Auna salud Classic", rango: [0, 17], reg: 130.3, prom: 84.68 },
             { plan: "Plan Auna salud Classic", rango: [18, 25], reg: 154.72, prom: 100.55 },
@@ -199,7 +201,6 @@
             const regInput = document.getElementById(`reg-${id}`);
             const promInput = document.getElementById(`prom-${id}`);
             
-            // Limpiar entrada para permitir solo números
             inputEdad.value = inputEdad.value.replace(/[^0-9]/g, '');
             const edad = parseInt(inputEdad.value);
 
@@ -207,7 +208,6 @@
             errorMsg.innerText = "";
 
             if (!isNaN(edad)) {
-                // Lógica de validación de edad según plan
                 if (planSeleccionado === "Plan Auna salud Senior") {
                     if (edad <= 60) {
                         errorMsg.innerText = "Este plan es para 61 años a más";
