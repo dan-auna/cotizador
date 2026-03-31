@@ -16,6 +16,9 @@
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .input-locked { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; }
         .no-wrap { white-space: nowrap !important; }
+        
+        /* Asegura que el canvas siempre se vea centrado en la web también */
+        #canvas-area { display: flex; justify-content: center; align-items: flex-start; width: 100%; }
     </style>
 </head>
 <body class="bg-slate-50 p-4 md:p-8">
@@ -71,8 +74,8 @@
             </div>
         </div>
 
-        <div id="canvas-area" class="flex justify-center items-start">
-            <div id="cotizacion-final" class="bg-white w-[450px] rounded-3xl overflow-hidden shadow-premium border border-gray-100">
+        <div id="canvas-area">
+            <div id="cotizacion-final" class="bg-white w-[450px] min-w-[450px] rounded-3xl overflow-hidden shadow-premium border border-gray-100">
                 <div class="p-8 pb-4 flex justify-between items-center">
                     <img src="https://res.cloudinary.com/dwxiuavqd/image/upload/f_auto,q_auto/AUNA_1_cfdhdt" alt="Logo" class="h-10" crossorigin="anonymous">
                     <span class="bg-cyan-50 text-auna-cyan text-[10px] font-bold px-3 py-1 rounded-full border border-cyan-100 uppercase">Cotización Oficial</span>
@@ -128,7 +131,6 @@
     </div>
 
     <script>
-        // ... (El resto del script permanece igual que tu versión anterior)
         const tarifario = [
             { plan: "Plan Auna salud Classic", rango: [0, 17], reg: 130.3, prom: 84.68 },
             { plan: "Plan Auna salud Classic", rango: [18, 25], reg: 154.72, prom: 100.55 },
@@ -200,52 +202,27 @@
             const planSeleccionado = document.getElementById('planGlobal').value;
             const regInput = document.getElementById(`reg-${id}`);
             const promInput = document.getElementById(`prom-${id}`);
-            
             inputEdad.value = inputEdad.value.replace(/[^0-9]/g, '');
             const edad = parseInt(inputEdad.value);
-
             let valid = true;
             errorMsg.innerText = "";
-
             if (!isNaN(edad)) {
                 if (planSeleccionado === "Plan Auna salud Senior") {
-                    if (edad <= 60) {
-                        errorMsg.innerText = "Este plan es para 61 años a más";
-                        valid = false;
-                    }
+                    if (edad <= 60) { errorMsg.innerText = "Este plan es para 61 años a más"; valid = false; }
                 } else {
-                    if (edad > 60) {
-                        errorMsg.innerText = "La edad máxima es 60";
-                        valid = false;
-                    }
+                    if (edad > 60) { errorMsg.innerText = "La edad máxima es 60"; valid = false; }
                 }
-
                 if (valid) {
-                    const match = tarifario.find(t => 
-                        t.plan === planSeleccionado && 
-                        edad >= t.rango[0] && 
-                        edad <= t.rango[1]
-                    );
-
-                    if (match) {
-                        regInput.value = match.reg.toFixed(2);
-                        promInput.value = match.prom.toFixed(2);
-                    } else {
-                        regInput.value = "0.00";
-                        promInput.value = "0.00";
-                    }
-                } else {
-                    regInput.value = "0.00";
-                    promInput.value = "0.00";
-                }
+                    const match = tarifario.find(t => t.plan === planSeleccionado && edad >= t.rango[0] && edad <= t.rango[1]);
+                    if (match) { regInput.value = match.reg.toFixed(2); promInput.value = match.prom.toFixed(2); }
+                    else { regInput.value = "0.00"; promInput.value = "0.00"; }
+                } else { regInput.value = "0.00"; promInput.value = "0.00"; }
             }
             actualizarPreview();
         }
 
         function actualizarTodoPorPlan() {
-            for (let i = 1; i <= currentIntegrantes; i++) {
-                autocompletarPrecios(i);
-            }
+            for (let i = 1; i <= currentIntegrantes; i++) { autocompletarPrecios(i); }
             actualizarPreview();
         }
 
@@ -303,22 +280,18 @@
             document.getElementById('prev-plan').innerText = document.getElementById('planGlobal').value;
             const fechaVal = document.getElementById('fechaLimite').value;
             document.getElementById('texto-vence').innerText = `Vence el ${formatearFecha(fechaVal)}`;
-            
             const b = document.getElementById('beneficio').value;
             const ab = document.getElementById('area-beneficio');
             if(b.trim()) { ab.classList.remove('hidden'); document.getElementById('prev-beneficio').innerText = b; }
             else { ab.classList.add('hidden'); }
-
             let tR = 0, tP = 0;
             const lista = document.getElementById('lista-detallada');
             lista.innerHTML = '';
-
             for (let i = 1; i <= currentIntegrantes; i++) {
                 const e = document.getElementById(`edad-${i}`)?.value || '?';
                 const r = parseFloat(document.getElementById(`reg-${i}`)?.value || 0);
                 const p = parseFloat(document.getElementById(`prom-${i}`)?.value || 0);
                 tR += r; tP += p;
-
                 lista.innerHTML += `<div class="flex justify-between items-center text-sm border-b border-gray-100 pb-2 integrante-item">
                     <span class="text-gray-600 font-medium mr-4">Integrante ${i} (${e} años)</span>
                     <div class="text-right min-w-fit">
@@ -338,33 +311,52 @@
             const bloqueRegular = document.getElementById('bloque-regular');
             const items = document.querySelectorAll('.integrante-item');
 
+            // 1. Preparar estado visual
             if (!conDescuento) {
                 bloqueDescuento.classList.add('hidden');
                 bloqueRegular.classList.remove('hidden');
                 items.forEach(item => {
-                    item.querySelector('.price-reg').classList.remove('line-through', 'text-gray-300', 'text-[10px]');
-                    item.querySelector('.price-reg').classList.add('text-gray-800', 'font-bold');
+                    const pr = item.querySelector('.price-reg');
+                    pr.classList.remove('line-through', 'text-gray-300', 'text-[10px]');
+                    pr.classList.add('text-gray-800', 'font-bold');
                     item.querySelector('.price-promo').classList.add('hidden');
                 });
             }
 
             try {
-                const dataUrl = await htmlToImage.toPng(area, {
-                    quality: 1, pixelRatio: 3, width: 450, height: area.offsetHeight,
-                    style: { transform: 'scale(1)', left: 0, top: 0, margin: 0 }
-                });
+                // 2. AJUSTE DE CENTRADO PARA DESCARGA
+                // Forzamos un estilo temporal al nodo para que html-to-image lo capture centrado e independiente del scroll lateral del móvil
+                const options = {
+                    quality: 1,
+                    pixelRatio: 3, // Alta calidad
+                    width: 450,    // Ancho exacto del diseño
+                    height: area.scrollHeight,
+                    style: {
+                        transform: 'scale(1)',
+                        left: '0',
+                        top: '0',
+                        margin: '0 auto', // Centrado forzado
+                        position: 'relative'
+                    }
+                };
+
+                const dataUrl = await htmlToImage.toPng(area, options);
+                
                 const link = document.createElement('a');
                 link.download = conDescuento ? `Cotizacion_Promo.png` : `Cotizacion_Regular.png`;
                 link.href = dataUrl;
                 link.click();
             } catch (error) {
+                console.error(error);
                 alert("Error al generar imagen.");
             } finally {
+                // 3. Restaurar estado original
                 bloqueDescuento.classList.remove('hidden');
                 bloqueRegular.classList.add('hidden');
                 items.forEach(item => {
-                    item.querySelector('.price-reg').classList.add('line-through', 'text-gray-300', 'text-[10px]');
-                    item.querySelector('.price-reg').classList.remove('text-gray-800', 'font-bold');
+                    const pr = item.querySelector('.price-reg');
+                    pr.classList.add('line-through', 'text-gray-300', 'text-[10px]');
+                    pr.classList.remove('text-gray-800', 'font-bold');
                     item.querySelector('.price-promo').classList.remove('hidden');
                 });
                 actualizarPreview();
